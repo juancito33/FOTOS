@@ -156,7 +156,7 @@ class BaseApp(QWidget):
             return False
         if not unidad:
             QMessageBox.warning(self, "Unidad requerida",
-                              "El campo UNIDAD no puede estar vacío.")
+                              "El campo IDENTIFICADOR UNIDAD no puede estar vacío.")
             return False
         return True
 
@@ -206,9 +206,9 @@ class BaseApp(QWidget):
             lambda: self.inp_npn.setText(
                 ''.join(filter(str.isdigit, self.inp_npn.text()))[:30]))
 
-        # UNIDAD
+        # IDENTIFICADOR UNIDAD
         self.inp_unidad = QLineEdit()
-        layout.addWidget(QLabel("UNIDAD"))
+        layout.addWidget(QLabel("IDENTIFICADOR UNIDAD"))
         layout.addWidget(self.inp_unidad)
         self.inp_unidad.textChanged.connect(self._mayus)
 
@@ -454,7 +454,7 @@ class MasivoApp(BaseApp):
     def _campo_unidad_ok(self):
         unidad = self.inp_unidad.text().strip()
         if not unidad:
-            QMessageBox.warning(self, "Unidad requerida", "Ingresa la UNIDAD.")
+            QMessageBox.warning(self, "Unidad requerida", "Ingresa el IDENTIFICADOR UNIDAD.")
             return False
         return True
 
@@ -526,99 +526,6 @@ class MasivoApp(BaseApp):
             self.zip_worker.terminate()
         self.progress_dialog.close()
 
-# ---------- módulo INDIVIDUAL ----------
-class IndividualApp(MasivoApp):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Módulo Individual")
-        self.btn_npn.setVisible(False)
-        self.btn_unit.setVisible(False)
-        self.btn_zip.setText("Generar ZIP")
-        # Cambiar color del ZIP a VERDE
-        self._aplicar_estilo_boton(self.btn_zip, "green")
-        self.root_dir = None
-
-    def _guardar_npn(self):
-        pass
-
-    def _guardar_unidad(self):
-        pass
-
-    def create_zip_structure(self, npn, unidad, tipo):
-        # Crear carpeta para el NPN en la carpeta de origen
-        npn_dir = os.path.join(self.root_dir, npn)
-        os.makedirs(npn_dir, exist_ok=True)
-        
-        if tipo == "Convencional":
-            for k, src in self.clasificaciones.items():
-                if src:
-                    # RENOMBRAR ARCHIVO
-                    nuevo_nombre = self._renombrar_archivo(npn, unidad, tipo, src, k)
-                    shutil.copyfile(src, os.path.join(npn_dir, nuevo_nombre))
-        else:
-            if self.no_conv_fachada:
-                # RENOMBRAR ARCHIVO
-                nuevo_nombre = self._renombrar_archivo(npn, unidad, tipo, self.no_conv_fachada, "fachada")
-                shutil.copyfile(self.no_conv_fachada, os.path.join(npn_dir, nuevo_nombre))
-            for i, src in enumerate(self.anexos, 1):
-                # RENOMBRAR ARCHIVO
-                nuevo_nombre = self._renombrar_archivo(npn, unidad, tipo, src, "", i)
-                shutil.copyfile(src, os.path.join(npn_dir, nuevo_nombre))
-        
-        return npn_dir
-
-    def create_zip(self):
-        if not self._campo_npn_unidad_ok():
-            return
-        
-        npn = self.inp_npn.text().strip()
-        unidad = self.inp_unidad.text().strip()
-        tipo = self.cmb_tipo.currentText()
-        
-        # Validación reforzada de imágenes
-        if tipo == "Convencional":
-            if not any(self.clasificaciones.values()):
-                QMessageBox.warning(self, "Imágenes faltantes", 
-                                   "¡ALERTA! Debes seleccionar al menos una imagen antes de generar el ZIP.")
-                return
-            if not self.clasificaciones["fachada"]:
-                QMessageBox.warning(self, "Fachada faltante", 
-                                   "¡ALERTA! La imagen de FACHADA es obligatoria.")
-                return
-        else:
-            if not self.no_conv_fachada:
-                QMessageBox.warning(self, "Fachada faltante", 
-                                   "¡ALERTA! La imagen de FACHADA es obligatoria para No Convencional.")
-                return
-            if not self.anexos:
-                QMessageBox.warning(self, "Anexos faltantes", 
-                                   "¡ALERTA! Debes agregar al menos un ANEXO.")
-                return
-        
-        # Usar carpeta de la primera imagen como raíz
-        origen = self.clasificaciones["fachada"] or self.no_conv_fachada or (self.anexos[0] if self.anexos else None)
-        if not origen:
-            QMessageBox.warning(self, "Falta imagen", "Selecciona las imágenes antes.")
-            return
-        self.root_dir = os.path.dirname(origen)
-
-        # Crear estructura en carpeta del NPN
-        npn_dir = self.create_zip_structure(npn, unidad, tipo)
-        zip_path = os.path.join(self.root_dir, f"{npn}.zip")
-        
-        # Crear ZIP con todo el contenido de la carpeta del NPN
-        with ZipFile(zip_path, "w") as zf:
-            for root, _, files in os.walk(npn_dir):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    rel_path = os.path.relpath(file_path, npn_dir)
-                    zf.write(file_path, os.path.join(npn, rel_path))
-        
-        QMessageBox.information(self, "ZIP creado", f"ZIP generado:\n{zip_path}")
-        self._reset_unit_checks()
-
-    def _zip_final(self):
-        self.create_zip()
 
 # ---------- selector ----------
 class Selector(QWidget):
@@ -634,16 +541,14 @@ class Selector(QWidget):
         lay.addWidget(welcome)
 
         self.combo = QComboBox()
-        self.combo.addItems(["Elegir módulo...", "Módulo Masivo", "Módulo Individual"])
+        self.combo.addItems(["Elegir módulo...", "Módulo Masivo"])
         lay.addWidget(QLabel("Selecciona módulo de trabajo"))
         lay.addWidget(self.combo)
 
         self.stack = QStackedLayout()
         self.stack.addWidget(QWidget())  # placeholder
         self.masivo = MasivoApp()
-        self.individual = IndividualApp()
         self.stack.addWidget(self.masivo)
-        self.stack.addWidget(self.individual)
         lay.addLayout(self.stack)
 
         self.combo.currentIndexChanged.connect(lambda i: self.stack.setCurrentIndex(i))
