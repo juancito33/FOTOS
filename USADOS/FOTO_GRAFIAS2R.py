@@ -539,8 +539,21 @@ class Selector(QWidget):
         welcome.setStyleSheet("font-size: 16px; font-weight: bold;")
         lay.addWidget(welcome)
 
+        efv50z-codex/explicar-y-mejorar-el-código-de-usados
         self.masivo = MasivoApp()
         lay.addWidget(self.masivo)
+        self.combo = QComboBox()
+        self.combo.addItems(["Elegir módulo...", "Módulo Masivo"])
+        lay.addWidget(QLabel("Selecciona módulo de trabajo"))
+        lay.addWidget(self.combo)
+        self.stack = QStackedLayout()
+        self.stack.addWidget(QWidget())  # placeholder
+        self.masivo = MasivoApp()
+        self.stack.addWidget(self.masivo)
+        lay.addLayout(self.stack)
+
+        self.combo.currentIndexChanged.connect(lambda i: self.stack.setCurrentIndex(i))
+        main
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
