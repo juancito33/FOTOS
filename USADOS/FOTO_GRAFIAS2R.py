@@ -5,7 +5,7 @@ from zipfile import ZipFile
 from functools import partial
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QFileDialog, QMessageBox, QComboBox, QStackedLayout, 
+    QPushButton, QFileDialog, QMessageBox, QComboBox,
     QGroupBox, QProgressDialog, QDialog, QFormLayout
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
@@ -319,9 +319,9 @@ class MasivoApp(BaseApp):
             self.btn_fach_nc.setText("Fachada NC ✓")
 
     def _sel_anexo(self):
-        paths, _ = QFileDialog.getOpenFileNames(self, "Escoger ANEXOS")
-        if paths:
-            self.anexos.extend(paths)
+        path, _ = QFileDialog.getOpenFileName(self, "Escoger ANEXO")
+        if path:
+            self.anexos.append(path)
             self.btn_anexo.setText(f"Anexos: {len(self.anexos)} ✓")
 
     # ---------- lógica NPN ----------
@@ -531,20 +531,21 @@ class MasivoApp(BaseApp):
 class Selector(QWidget):
     def __init__(self, username):
         super().__init__()
-        self.setWindowTitle(f"Selector de Módulo - Usuario: {username}")
+        self.setWindowTitle(f"Módulo Masivo - Usuario: {username}")
         self.setFixedSize(680, 640)
         lay = QVBoxLayout(self)
-        
-        # Mensaje de bienvenida
+
         welcome = QLabel(f"Bienvenido: {username}")
         welcome.setStyleSheet("font-size: 16px; font-weight: bold;")
         lay.addWidget(welcome)
 
+        efv50z-codex/explicar-y-mejorar-el-código-de-usados
+        self.masivo = MasivoApp()
+        lay.addWidget(self.masivo)
         self.combo = QComboBox()
         self.combo.addItems(["Elegir módulo...", "Módulo Masivo"])
         lay.addWidget(QLabel("Selecciona módulo de trabajo"))
         lay.addWidget(self.combo)
-
         self.stack = QStackedLayout()
         self.stack.addWidget(QWidget())  # placeholder
         self.masivo = MasivoApp()
@@ -552,6 +553,7 @@ class Selector(QWidget):
         lay.addLayout(self.stack)
 
         self.combo.currentIndexChanged.connect(lambda i: self.stack.setCurrentIndex(i))
+        main
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -559,10 +561,9 @@ if __name__ == "__main__":
     # Mostrar login primero
     login = LoginDialog()
     if login.exec_() == QDialog.Accepted:
-        # Si el login es exitoso, mostrar la ventana principal
         selector = Selector(login.username.text())
         selector.show()
         sys.exit(app.exec_())
     else:
-        # Si se cancela el login, salir de la aplicación
         sys.exit()
+
