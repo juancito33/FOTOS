@@ -548,6 +548,7 @@ class Selector(QWidget):
 
         self.masivo = MasivoApp()
         lay.addWidget(self.masivo)
+        # El selector ya no incluye otros módulos; se eliminó el desplegable
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
