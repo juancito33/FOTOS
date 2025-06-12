@@ -13,12 +13,15 @@ from PyQt5.QtGui import QColor, QPalette, QIcon
 
 # ---------- validación ----------
 class Validador:
+    """Funciones de validación simples para los datos ingresados."""
     @staticmethod
     def npn_ok(npn: str) -> bool:
         return npn.isdigit() and len(npn) == 30
 
 # ---------- Hilo para compresión ZIP ----------
 class ZipWorker(QThread):
+    """Hilo encargado de comprimir archivos mostrando el progreso."""
+
     progress = pyqtSignal(int)
     finished = pyqtSignal(str)
     error = pyqtSignal(str)
@@ -54,6 +57,7 @@ class ZipWorker(QThread):
 
 # ---------- Sistema de Login ----------
 class LoginDialog(QDialog):
+    """Diálogo simple para autenticarse antes de usar la aplicación."""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Inicio de Sesión")
@@ -134,6 +138,7 @@ class LoginDialog(QDialog):
 
 # ---------- clase base ----------
 class BaseApp(QWidget):
+    """Contiene utilidades y validaciones compartidas por los módulos."""
     def __init__(self):
         super().__init__()
         self.root_dir = None
@@ -236,6 +241,7 @@ class BaseApp(QWidget):
 
 # ---------- módulo MASIVO ----------
 class MasivoApp(BaseApp):
+    """Interfaz para registrar varias unidades y generar un ZIP final."""
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Módulo Masivo")
@@ -529,6 +535,7 @@ class MasivoApp(BaseApp):
 
 # ---------- selector ----------
 class Selector(QWidget):
+    """Ventana principal que carga directamente el módulo masivo."""
     def __init__(self, username):
         super().__init__()
         self.setWindowTitle(f"Módulo Masivo - Usuario: {username}")
@@ -538,8 +545,9 @@ class Selector(QWidget):
         welcome = QLabel(f"Bienvenido: {username}")
         welcome.setStyleSheet("font-size: 16px; font-weight: bold;")
         lay.addWidget(welcome)
-
-        efv50z-codex/explicar-y-mejorar-el-código-de-usados
+        self.masivo = MasivoApp()
+        lay.addWidget(self.masivo)
+        # El selector ya no incluye otros módulos; se eliminó el desplegable
         self.masivo = MasivoApp()
         lay.addWidget(self.masivo)
         self.combo = QComboBox()
