@@ -545,10 +545,23 @@ class Selector(QWidget):
         welcome = QLabel(f"Bienvenido: {username}")
         welcome.setStyleSheet("font-size: 16px; font-weight: bold;")
         lay.addWidget(welcome)
-
         self.masivo = MasivoApp()
         lay.addWidget(self.masivo)
         # El selector ya no incluye otros módulos; se eliminó el desplegable
+        self.masivo = MasivoApp()
+        lay.addWidget(self.masivo)
+        self.combo = QComboBox()
+        self.combo.addItems(["Elegir módulo...", "Módulo Masivo"])
+        lay.addWidget(QLabel("Selecciona módulo de trabajo"))
+        lay.addWidget(self.combo)
+        self.stack = QStackedLayout()
+        self.stack.addWidget(QWidget())  # placeholder
+        self.masivo = MasivoApp()
+        self.stack.addWidget(self.masivo)
+        lay.addLayout(self.stack)
+
+        self.combo.currentIndexChanged.connect(lambda i: self.stack.setCurrentIndex(i))
+        main
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
